@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "name": "Panini Projection Mod",
   "description": "Replaces the default perspective projection with a Panini Projection in Minecraft 26.3.",
-  "authors": ["AI Agent"],
+  "authors": ["Staflorn"],
   "contact": {
     "homepage": "https://github.com/example/panini-projection-mod"
   },
