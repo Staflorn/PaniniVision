@@ -1,0 +1,80 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.fabricmc.net/' }
+        gradlePluginPortal()
+        maven { url 'https://maven.minecraftforge.net/' }
+    }
+    dependencies {
+        classpath 'net.fabricmc:fabric-loom:1.18.2'
+    }
+}
+
+apply plugin: 'fabric-loom'
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+version = project.property('mod_version')
+group = project.property('maven_group')
+
+base {
+    archivesName = project.property('archives_base_name')
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://maven.fabricmc.net/' }
+}
+
+// Minecraft version
+def minecraft_version = project.property('minecraft_version')
+def fabric_loader_version = project.property('fabric_loader_version')
+def fabric_api_version = project.property('fabric_api_version')
+
+dependencies {
+    // Minecraft 26.3 ships with native Mojang names (compliance level 1 / unobfuscated)
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+
+    // No mappings layer needed - the jar is already in Mojang names.
+    // disableObfuscation=true in gradle.properties handles this.
+
+    // Fabric (modImplementation is not created with disableObfuscation; use implementation)
+    implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+
+    // Mixin is bundled with Fabric Loader; no need to explicitly include it.
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
+
+loom {
+    runs {
+        client {
+            ideConfigGenerated = true
+        }
+        server {
+            ideConfigGenerated = true
+        }
+    }
+}
+
+// No expand needed — version is hardcoded in fabric.mod.json
+// (Groovy template expand was corrupting "schemaVersion" → "schema")
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.release = 25
+}
