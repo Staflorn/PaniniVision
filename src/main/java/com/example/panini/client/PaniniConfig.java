@@ -32,20 +32,38 @@ public class PaniniConfig {
     public float paniniStrength = 0.5f;
 
     /**
-     * If true, Panini is only applied when the FOV is above {@link #wideFovThreshold}.
+     * Vertical compression of the generalized Panini projection.
+     * 0.0 keeps the basic Panini vertical mapping; 1.0 fully straightens
+     * horizontal lines.
      */
-    public boolean onlyWideFov = false;
+    public float verticalCompression = 0.06f;
 
     /**
-     * FOV (in degrees) above which Panini is applied when {@link #onlyWideFov} is true.
+     * Scale of the projected image.
+     * 1.0 preserves the game's full FOV; lower values crop the edge of the
+     * rendered view to create a less extreme camera angle.
      */
-    public float wideFovThreshold = 90.0f;
+    public float cameraZoom = 0.7f;
 
     /**
-     * If true, applies a vertical scale correction to compensate for
-     * the vertical FOV change introduced by the Panini projection.
+     * Whether the first-person hand and item compensation is enabled.
      */
-    public boolean verticalCorrection = false;
+    public boolean viewmodelCompensationEnabled = false;
+
+    /**
+     * Uniform scale applied to first-person hands and items.
+     */
+    public float viewmodelScale = 0.92f;
+
+    /**
+     * Horizontal offset applied to first-person hands and items.
+     */
+    public float viewmodelOffsetX = 0.0f;
+
+    /**
+     * Vertical offset applied to first-person hands and items.
+     */
+    public float viewmodelOffsetY = 0.0f;
 
     // ---- Persistence ----
 

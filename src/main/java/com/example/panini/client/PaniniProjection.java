@@ -111,15 +111,6 @@ public final class PaniniProjection {
             return false;
         }
 
-        // Optionally only apply at wide FOV (the shader handles all FOVs correctly,
-        // but users may want Panini only at high FOVs for performance or preference)
-        if (config.onlyWideFov) {
-            float fov = (float) Math.toDegrees(Math.atan(1.0f / Math.abs(cameraState.projectionMatrix.m11())) * 2.0);
-            if (fov < config.wideFovThreshold) {
-                return false;
-            }
-        }
-
         return true;
     }
 
@@ -140,7 +131,8 @@ public final class PaniniProjection {
      * - x: Panini strength (0-1)
      * - y: 1/|m00| (horizontal tangent: aspect * tan(fov/2))
      * - z: 1/|m11| (vertical tangent: tan(fov/2))
-     * - w: padding
+     * - w: vertical compression (0-1)
+     * - second vec4 x: camera zoom (0.5-1.0)
      *
      * @return true if the uniforms were successfully updated
      */
@@ -172,7 +164,7 @@ public final class PaniniProjection {
 
         // Create a new buffer with default values
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            ByteBuffer data = createConfigBuffer(stack, 0.0f, 1.0f, 1.0f);
+            ByteBuffer data = createConfigBuffer(stack, 0.0f, 1.0f, 1.0f, 0.06f, 0.7f);
             GpuBuffer newBuffer = RenderSystem.getDevice().createBuffer(
                 () -> "PaniniProjection config", 136, data
             );
@@ -190,6 +182,8 @@ public final class PaniniProjection {
     private static boolean writeConfigUniform(GpuBuffer buffer, CameraRenderState cameraState) {
         PaniniConfig config = PaniniProjectionClient.getConfig();
         float strength = config.paniniStrength;
+        float verticalCompression = config.verticalCompression;
+        float cameraZoom = config.cameraZoom;
 
         Matrix4f projectionMatrix = cameraState.projectionMatrix;
         float sourceExtentX = reciprocalMagnitude(projectionMatrix.m00());
@@ -201,7 +195,7 @@ public final class PaniniProjection {
         }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            ByteBuffer data = createConfigBuffer(stack, strength, sourceExtentX, sourceExtentY);
+            ByteBuffer data = createConfigBuffer(stack, strength, sourceExtentX, sourceExtentY, verticalCompression, cameraZoom);
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(buffer.slice(), data);
         }
 
@@ -215,9 +209,10 @@ public final class PaniniProjection {
     /**
      * Create a std140 vec4 buffer with the given parameters.
      */
-    private static ByteBuffer createConfigBuffer(MemoryStack stack, float strength, float sourceExtentX, float sourceExtentY) {
-        return com.mojang.blaze3d.buffers.Std140Builder.onStack(stack, 16)
-            .putVec4(strength, sourceExtentX, sourceExtentY, 0.0f)
+    private static ByteBuffer createConfigBuffer(MemoryStack stack, float strength, float sourceExtentX, float sourceExtentY, float verticalCompression, float cameraZoom) {
+        return com.mojang.blaze3d.buffers.Std140Builder.onStack(stack, 32)
+            .putVec4(strength, sourceExtentX, sourceExtentY, verticalCompression)
+            .putVec4(cameraZoom, 0.0f, 0.0f, 0.0f)
             .get();
     }
 }
