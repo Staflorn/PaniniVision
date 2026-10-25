@@ -12,6 +12,7 @@ Panini Projection preserves the feeling of a wide FOV while producing a more nat
 - Works with compatible shader packs used in your Minecraft setup.
 - Allows you to adjust the strength of the projection effect.
 Suitable for ultrawide monitors and players who prefer a high FOV.
+- Optionally, you can change the size of the hand and its position.
 
 ## **Who Is This Mod For?**
 
